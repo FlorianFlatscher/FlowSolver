@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox fillHeight="false" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+   <children>
+      <GridPane minHeight="60.0" minWidth="200.0" prefHeight="60.0" prefWidth="200.0">
+        <columnConstraints>
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <HBox.margin>
+            <Insets left="10.0" top="10.0" />
+         </HBox.margin>
+         <children>
+            <Label text="Dimension:" />
+            <Button mnemonicParsing="false" text="Submit" GridPane.rowIndex="1" />
+            <Spinner fx:id="dimensionSpinner" GridPane.columnIndex="1" />
+         </children>
+      </GridPane>
+      <StackPane fx:id="gameContainer" minHeight="500.0" minWidth="500.0" />
+   </children>
+</HBox>
