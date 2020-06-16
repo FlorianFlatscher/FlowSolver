@@ -5,15 +5,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.*;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.net.URL;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.ResourceBundle;
 
 public class FlowController implements Initializable {
@@ -65,18 +64,23 @@ public class FlowController implements Initializable {
                         int finalX = x;
                         int finalY = y;
                         stackPane.setOnMouseClicked((event) -> {
-                            int code = ++state.getBoard()[finalX][finalY];
-                            if (code > 6) {
-                                code = 0;
-                                state.getBoard()[finalX][finalY] = 0;
+                            int code = 0;
+                            switch (event.getButton()) {
+                                case PRIMARY:
+                                    code = state.chicleUpId(finalX, finalY);
+                                    break;
+
+                                case SECONDARY:
+                                    code = state.chicleUpDown(finalX, finalY);
+                                    break;
                             }
                             shapes[finalX][finalY].setFill(codeToColor(code));
+
                             if (code > 0) {
                                 shapes[finalX][finalY].setVisible(true);
                             } else {
                                 shapes[finalX][finalY].setVisible(false);
                             }
-
                         });
                         gameGrid.add(stackPane, x, y);
                     }
@@ -112,5 +116,9 @@ public class FlowController implements Initializable {
                 return Color.AQUA;
         }
         return null;
+    }
+
+    public GameState getState() {
+        return state;
     }
 }
