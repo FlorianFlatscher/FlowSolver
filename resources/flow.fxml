@@ -3,10 +3,10 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Group fx:id="pathGroup" StackPane.alignment="TOP_LEFT" />
-      <GridPane fx:id="gameGrid" gridLinesVisible="true">
+      <Group fx:id="pathGroup" />
+      <GridPane fx:id="gameGrid" prefHeight="90.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -18,4 +18,4 @@
         </rowConstraints>
       </GridPane>
    </children>
-</StackPane>
+</AnchorPane>

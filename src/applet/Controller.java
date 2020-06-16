@@ -1,17 +1,20 @@
+package applet;
+
+import flow.FlowController;
+import javafx.beans.binding.BooleanBinding;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.InvalidPropertiesFormatException;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -24,6 +27,10 @@ public class Controller implements Initializable {
     private Spinner<Integer> dimensionSpinner;
     @FXML
     private Button submitButton;
+    @FXML
+    private Button resetButton;
+    @FXML
+    private ProgressIndicator progressionIndicator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -38,15 +45,16 @@ public class Controller implements Initializable {
 
 
         gameContainer.getChildren().add(game);
-        dimensionSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(4, 7, 4));
+        dimensionSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(4, 9, 4));
         flowController.dimensionProperty().bind(dimensionSpinner.valueProperty());
 
-        submitButton.setOnAction(actionEvent -> {
-            try {
-                System.out.println("flowController.getState().solve() = " + Arrays.toString(flowController.getState().solve()));
-            } catch (InvalidPropertiesFormatException e) {
-                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
-            }
+        submitButton.setOnAction(event -> {
+            Task task = flowController.generateSolveTask();
+            progressionIndicator.visibleProperty().bind(task.runningProperty());
+            submitButton.visibleProperty().bind(task.runningProperty().not());
+            Thread th = new Thread(task);
+            th.start();
         });
+        resetButton.setOnAction(event -> flowController.rebuild(dimensionSpinner.getValue()));
     }
 }
