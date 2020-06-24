@@ -1,12 +1,10 @@
 package flow;
 
-import javafx.scene.shape.PathElement;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class PathArrayList extends ArrayList<PathElement> {
+public class PathArrayList extends ArrayList<Location> {
     public PathArrayList(int initialCapacity) {
         super(initialCapacity);
     }
@@ -14,7 +12,7 @@ public class PathArrayList extends ArrayList<PathElement> {
     public PathArrayList() {
     }
 
-    public PathArrayList(Collection<? extends PathElement> c) {
+    public PathArrayList(Collection<? extends Location> c) {
         super(c);
     }
 
@@ -22,4 +20,6 @@ public class PathArrayList extends ArrayList<PathElement> {
     public String toString() {
         return Arrays.toString(super.toArray());
     }
+
+
 }

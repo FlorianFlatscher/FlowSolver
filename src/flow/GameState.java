@@ -1,7 +1,10 @@
 package flow;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.PathElement;
 
 import java.util.ArrayList;
@@ -113,32 +116,24 @@ public class GameState {
         }
         for (Integer pointId : pointIds) {
             paths[pointId] = new PathArrayList();
-            paths[pointId].add(new MoveTo(points[pointId][0].getX(), points[pointId][0].getY()));
+            paths[pointId].add(new Location(points[pointId][0].getX(), points[pointId][0].getY()));
         }
     }
 
     private GameState move(int pathIndex, int deltaX, int deltaY) {
         PathArrayList path = paths[pathIndex];
-        PathElement pathElement = path.get(path.size() - 1);
+        Location pathElement = path.get(path.size() - 1);
         int x, y;
 
-        if (pathElement instanceof MoveTo) {
-            MoveTo moveTo = (MoveTo) pathElement;
-            x = ((int) (moveTo.getX() + 0.1));
-            y = ((int) (moveTo.getY() + 0.1));
-        } else if (pathElement instanceof LineTo) {
-            LineTo pathTo = (LineTo) pathElement;
-            x = ((int) (pathTo.getX() + 0.1));
-            y = ((int) (pathTo.getY() + 0.1));
-        } else {
-            throw new NullPointerException();
-        }
+
+        x = pathElement.getX();
+        y = pathElement.getY();
 
         if (points[pathIndex][1].getX() == x && points[pathIndex][1].getY() == y) {
             return null;
         }
 
-        if (x + deltaX >= 0 && x + deltaX < pathBoard.length && y + deltaY >= 0 && y + deltaY < pathBoard[0].length)
+        if (x + deltaX >= 0 && x + deltaX < pathBoard.length && y + deltaY >= 0 && y + deltaY < pathBoard[0].length) {
             if (pathBoard[x + deltaX][y + deltaY] == 0 || points[pathIndex][1].getX() == x + deltaX && points[pathIndex][1].getY() == y + deltaY) {
                 PathArrayList[] newPaths = new PathArrayList[FlowController.pointColors.length];
                 for (int i = 0, pathsLength = paths.length; i < pathsLength; i++) {
@@ -149,51 +144,91 @@ public class GameState {
                 }
 
 
-                newPaths[pathIndex].add(new LineTo(x + deltaX, y + deltaY));
+                newPaths[pathIndex].add(new Location(x + deltaX, y + deltaY));
 
                 int[][] newBoard = deepCopyIntMatrix(pathBoard);
                 newBoard[x + deltaX][y + deltaY] = pathIndex;
 
                 return new GameState(this, newPaths, newBoard);
             }
-
+        }
         return null;
     }
 
     private boolean solved() {
         int test = 0;
-        for (int i = 0; i < paths.length; i++) {
+        for (int i = 1; i < paths.length; i++) {
             PathArrayList path = paths[i];
             if (path == null)
                 continue;
-            PathElement pathElement = path.get(path.size() - 1);
+            Location pathElement = path.get(path.size() - 1);
             int x, y;
 
-            if (pathElement instanceof LineTo) {
-                LineTo pathTo = (LineTo) pathElement;
-                x = ((int) (pathTo.getX() + 0.1));
-                y = ((int) (pathTo.getY() + 0.1));
+            x = pathElement.getX();
+            y = pathElement.getY();
 
-                if (!(x == points[i][1].getX() && y == points[i][1].getY())) {
-                    return false;
-                }
-            } else {
+            if (!(x == points[i][1].getX() && y == points[i][1].getY())) {
                 return false;
             }
+
         }
         return true;
     }
 
-    public PathArrayList[] solve() throws InvalidPropertiesFormatException {
+    public PathArrayList[] solve(FlowController controller) throws InvalidPropertiesFormatException {
         compile();
-        return innerSolve();
+        return innerSolve(controller);
     }
 
-    private PathArrayList[] innerSolve() {
+    private PathArrayList[] innerSolve(FlowController controller) {
         if (solved()) {
             return paths;
         }
 
+        Platform.runLater(() -> {
+            PathArrayList[] solve = paths;
+            if (solve == null) {
+                new Alert(Alert.AlertType.ERROR, "No solution found").show();
+                return;
+            }
+            controller.pathGroup.getChildren().clear();
+            for (int i = 0; i < solve.length; i++) {
+                if (solve[i] == null)
+                    continue;
+                Path path = new Path();
+                path.getElements().add(new MoveTo(solve[i].get(0).getX(), solve[i].get(0).getY()));
+                for (int l = 1; l < solve[i].size(); l++) {
+                    path.getElements().add(new LineTo(solve[i].get(l).getX(), solve[i].get(l).getY()));
+                }
+
+                path.setStroke(FlowController.pointColors[i]);
+                path.setStrokeWidth(5);
+
+                final double scX = controller.gameGrid.getWidth() / controller.gameGrid.getColumnCount();
+                final double scY = controller.gameGrid.getHeight() / controller.gameGrid.getRowCount();
+
+                for (PathElement element : path.getElements()) {
+                    if (element instanceof MoveTo) {
+                        MoveTo moveTo = (MoveTo) element;
+                        moveTo.setX(moveTo.getX() * scX + scX / 2);
+                        moveTo.setY(moveTo.getY() * scY + scY / 2);
+                    }
+
+                    if (element instanceof LineTo) {
+                        LineTo lineTo = (LineTo) element;
+                        lineTo.setX(lineTo.getX() * scX + scX / 2);
+                        lineTo.setY(lineTo.getY() * scY + scY / 2);
+                    }
+                }
+                controller.pathGroup.getChildren().add(path);
+            }
+        });
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
             PathArrayList path = paths[pathIndex];
             if (path == null) {
@@ -202,7 +237,7 @@ public class GameState {
             for (int i = 0; i < 4; i++) {
                 GameState move = move(pathIndex, fastCos[i], fastSin[i]);
                 if (move != null) {
-                    PathArrayList[] movePath = move.innerSolve();
+                    PathArrayList[] movePath = move.innerSolve(controller);
                     if (movePath != null) {
                         return movePath;
                     }

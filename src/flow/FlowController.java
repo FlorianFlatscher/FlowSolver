@@ -1,9 +1,6 @@
 package flow;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,9 +22,9 @@ public class FlowController implements Initializable {
     public static final Paint[] pointColors = new Paint[]{Color.BLACK, Color.GREEN, Color.YELLOW, Color.RED, Color.BLUE, Color.MAGENTA, Color.AQUA, Color.BROWN, Color.ORANGE};
 
     @FXML
-    private Group pathGroup;
+    public Group pathGroup;
     @FXML
-    private GridPane gameGrid;
+    public GridPane gameGrid;
 
     private SimpleIntegerProperty dimension = new SimpleIntegerProperty();
 
@@ -120,7 +117,7 @@ public class FlowController implements Initializable {
             protected PathArrayList[] call() {
 
                 try {
-                    return FlowController.this.getState().solve();
+                    return FlowController.this.getState().solve(FlowController.this);
                 } catch (InvalidPropertiesFormatException e) {
                     this.updateMessage(e.getMessage());
                     this.cancel();
@@ -130,14 +127,19 @@ public class FlowController implements Initializable {
         };
         task.setOnSucceeded(workerStateEvent -> {
             PathArrayList[] solve = task.getValue();
+            System.out.println("finished");
             if (solve == null) {
-                new Alert(Alert.AlertType.ERROR, "No solution found").show();
+                new Alert(Alert.AlertType.ERROR, "No solution found (134)").show();
                 return;
             }
             for (int i = 0; i < solve.length; i++) {
                 if (solve[i] == null)
                     continue;
-                Path path = new Path(solve[i]);
+                Path path = new Path();
+                path.getElements().add(new MoveTo(solve[i].get(0).getX(), solve[i].get(0).getY()));
+                for (int l = 1; l < solve[i].size(); l++) {
+                    path.getElements().add(new LineTo(solve[i].get(l).getX(), solve[i].get(l).getY()));
+                }
 
                 path.setStroke(pointColors[i]);
                 path.setStrokeWidth(5);
